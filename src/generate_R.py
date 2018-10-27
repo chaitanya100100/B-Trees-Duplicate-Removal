@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import random
 
-MAX_VAL = 1000
+MAX_VAL = 100000
 
 if len(sys.argv) != 5:
     print("Usage : %s <output_path> <num_row> <num_col> <dup_percent>" % (sys.argv[0]))

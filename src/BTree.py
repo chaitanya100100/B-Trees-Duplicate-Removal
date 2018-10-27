@@ -1,26 +1,35 @@
+from bisect import bisect_right
 
 class Node(object):
-    def __init__(self, D = 4, keys = None, ptr = None, is_leaf = True):
+    def __init__(self, D = 256, keys = None, ptr = None, is_leaf = True):
         self.D = D
         self.ptr = []
         self.keys = []
         self.is_leaf = is_leaf
 
     def search(self, k):
-        for idx, ky in enumerate(self.keys):
-            if ky == k:
-                return True
-            elif ky > k and self.ptr[idx] is not None:
-                return self.ptr[idx].search(k)
-
-        if len(self.keys) and self.keys[-1] < k and self.ptr[-1] is not None:
-            return self.ptr[-1].search(k)
+        idx = bisect_right(self.keys, k)
+        if idx != 0 and self.keys[idx-1] == k:
+            return True
+        elif not self.is_leaf:
+            return self.ptr[idx].search(k)
+        else:
+            return False
+        # for idx, ky in enumerate(self.keys):
+        #     if ky == k:
+        #         return True
+        #     elif ky > k and self.ptr[idx] is not None:
+        #         return self.ptr[idx].search(k)
+        #
+        # if len(self.keys) and self.keys[-1] < k and self.ptr[-1] is not None:
+        #     return self.ptr[-1].search(k)
         return False
 
     def insert(self, k):
-        i = 0
-        while i < len(self.keys) and self.keys[i] <= k:
-            i += 1
+        # i = 0
+        # while i < len(self.keys) and self.keys[i] <= k:
+        #     i += 1
+        i = bisect_right(self.keys, k)
         if self.is_leaf:
             self.keys.insert(i, k)
             self.ptr.insert(i, None)

@@ -2,8 +2,9 @@ import sys
 import os
 from MyHash import MyHash
 from BTree import BTree
+import time
 
-BLOCK_SIZE = 512 # in bytes
+BLOCK_SIZE = 32*1024 # in bytes
 
 class DuplicateElimination(object):
 
@@ -47,11 +48,10 @@ class DuplicateElimination(object):
         if len(self.out_buff) == 0:
             return
 
-        # write to output file
-        #----------------------
-        st = "\n".join([" ".join(list(map(str, r))) for r in self.out_buff]) + "\n"
+        #st = "\n".join([" ".join(list(map(str, r))) for r in self.out_buff]) + "\n"
+        st = "".join([r for r in self.out_buff])
         self.out_fd.write(st)
-
+        self.out_fd.flush()
         del self.out_buff[:]
 
 
@@ -70,6 +70,9 @@ class DuplicateElimination(object):
 
         print("MMB = number of main memory blocks = ", self.MMB)
         print("NTB = number of tuples in a block = ", self.NTB)
+        print("NR = number of tuples in relation = ", self.NR)
+        print("NC = number of cols in relation = ", self.NC)
+        print("BR = number of blocks in relation = ", self.NR//self.NTB)
 
         self.out_buff = []
         self.inp_buff = [[] for i in range(self.MMB - 1)]
@@ -86,17 +89,21 @@ class DuplicateElimination(object):
 
 
     def get_next(self):
-
-        for ib in self.inp_buff:
-            if len(ib) == 0:
-                for i in range(self.NTB):
-                    row = self.inp_fd.readline()
-                    if not row: break
-                    row = [int(c) for c in row.rstrip().split()]
-                    ib.append(row)
+        cnt = 0
+        while cnt <= len(self.inp_buff):
+            ib = self.inp_buff[self.inp_idx]
+            self.inp_idx = (self.inp_idx + 1)%len(self.inp_buff)
+            cnt += 1
 
             if len(ib) != 0:
                 return ib.pop(-1)
+            else:
+                for i in range(self.NTB):
+                    row = self.inp_fd.readline()
+                    if not row:
+                        break
+                    #row = [int(c) for c in row.rstrip().split()]
+                    ib.append(row)
 
         return None
 
